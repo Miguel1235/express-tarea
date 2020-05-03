@@ -4,7 +4,6 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 
 const clientsRouter=require('./routes/clients');
-const contractsRouter=require('./routes/contracts');
 
 const app = express();
 
@@ -16,6 +15,5 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public'))); // path absoluto de la carpeta public
 
 app.use('/clients',clientsRouter)
-app.use('/clients/:num/contracts',contractsRouter)
 
 module.exports = app;
