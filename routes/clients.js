@@ -41,10 +41,7 @@ router
 		}, 100);
 	})
 	.post((req, res) => {
-		const {
-			name,
-			email
-		} = req.body;
+		const { name, email } = req.body;
 		if (name && email) {
 			client.get("clientId", (err, reply) =>
 				client.hmset(`client:${reply}`, "name", name, "email", email)
@@ -66,26 +63,21 @@ router
 
 	.get((req, res) =>
 		client.hgetall(`client:${req.params.num}`, (err, reply) =>
-			reply ?
-			res.json({
-				status: "SUCCESS",
-				data: reply,
-			}) :
-			res.json({
-				status: "FAILED",
-				err: errors.err2,
-			})
+			reply
+				? res.json({
+					status: "SUCCESS",
+					data: reply,
+				})
+				: res.json({
+					status: "FAILED",
+					err: errors.err2,
+				})
 		)
 	)
 
 	.put((req, res) => {
-		const {
-			name,
-			email
-		} = req.body;
-		const {
-			num
-		} = req.params;
+		const { name, email } = req.body;
+		const { num } = req.params;
 		client.hgetall(`client:${req.params.num}`, (err, reply) => {
 			if (reply) {
 				if (name && email)
@@ -113,51 +105,49 @@ router
 	})
 	.delete((req, res) =>
 		client.del(`client:${req.params.num}`, (err, reply) =>
-			reply ?
-			res.json({
-				status: "OK",
-				msg: messages.msg1,
-			}) :
-			res.json({
-				status: "FAILED",
-				err: errors.err1,
-			})
+			reply
+				? res.json({
+					status: "OK",
+					msg: messages.msg1,
+				})
+				: res.json({
+					status: "FAILED",
+					err: errors.err1,
+				})
 		)
 	);
 
 router
 	.route("/:num/contracts")
 	.get((req, res) => {
-		let clientContracts = []
-		const addClientContract = (contract) => clientContracts.push(contract)
+		let clientContracts = [];
+		const addClientContract = (contract) => clientContracts.push(contract);
 		client.hgetall(`client:${req.params.num}`, (err, reply) => {
-			reply ?
-				client.get('contractId', (err, reply) => {
+			reply
+				? client.get("contractId", (err, reply) => {
 					for (let i = 1; i <= reply; i++) {
 						client.hgetall(`contract:${i}`, (err, reply) => {
 							if (reply && reply.clientId === req.params.num) {
-								addClientContract(reply)
+								addClientContract(reply);
 							}
-						})
+						});
 					}
 					setTimeout(() => {
 						res.json({
 							status: "SUCCESS",
 							data: clientContracts,
-						})
+						});
 					}, 400);
-				}) :
-				res.json({
+				})
+				: res.json({
 					status: "FAILED",
 					err: errors.err2,
-				})
-		})
+				});
+		});
 	})
 
 	.post((req, res) => {
-		const {
-			amount
-		} = req.body;
+		const { amount } = req.body;
 		if (Number(amount) > 0) {
 			client.hgetall(`client:${req.params.num}`, (err, reply) => {
 				if (reply) {
@@ -194,25 +184,21 @@ router
 	.route("/:num/contracts/:numC")
 
 	.get((req, res) => {
-		const {
-			num,
-			numC
-		} = req.params;
+		const { num, numC } = req.params;
 		client.hgetall(`client:${num}`, (err, reply) => {
 			reply
-				?
-				client.hgetall(`contract:${numC}`, (err, reply) =>
-					reply ?
-					res.json({
-						status: "SUCCESS",
-						data: reply,
-					}) :
-					res.json({
-						status: "FAILED",
-						err: errors.err4,
-					})
-				) :
-				res.json({
+				? client.hgetall(`contract:${numC}`, (err, reply) =>
+					reply
+						? res.json({
+							status: "SUCCESS",
+							data: reply,
+						})
+						: res.json({
+							status: "FAILED",
+							err: errors.err4,
+						})
+				)
+				: res.json({
 					status: "FAILED",
 					err: errors.err2,
 				});
@@ -220,15 +206,11 @@ router
 	})
 
 	.put((req, res) => {
-		const {
-			num,
-			numC
-		} = req.params;
+		const { num, numC } = req.params;
 		if (req.body.amount > 0) {
 			client.hgetall(`client:${num}`, (err, reply) => {
 				reply
-					?
-					client.hgetall(`contract:${numC}`, (err, reply) => {
+					? client.hgetall(`contract:${numC}`, (err, reply) => {
 						if (reply) {
 							client.hset(`contract:${numC}`, "amount", req.body.amount);
 							client.hgetall(`contract:${numC}`, (err, reply) =>
@@ -242,8 +224,8 @@ router
 								status: "FAILED",
 								err: errors.err4,
 							});
-					}) :
-					res.json({
+					})
+					: res.json({
 						status: "FAILED",
 						err: errors.err2,
 					});
@@ -256,27 +238,24 @@ router
 	})
 
 	.delete((req, res) => {
-		const {
-			num,
-			numC
-		} = req.params;
+		const { num, numC } = req.params;
 		client.hgetall(`client:${num}`, (err, reply) =>
-			reply ?
-			client.del(`contract:${numC}`, (err, reply) =>
-				reply ?
-				res.json({
-					status: "OK",
-					msg: messages.msg4,
-				}) :
-				res.json({
+			reply
+				? client.del(`contract:${numC}`, (err, reply) =>
+					reply
+						? res.json({
+							status: "OK",
+							msg: messages.msg4,
+						})
+						: res.json({
+							status: "FAILED",
+							err: errors.err4,
+						})
+				)
+				: res.json({
 					status: "FAILED",
-					err: errors.err4,
+					err: errors.err2,
 				})
-			) :
-			res.json({
-				status: "FAILED",
-				err: errors.err2,
-			})
 		);
 	});
 module.exports = router;
